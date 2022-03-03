@@ -1,3 +1,4 @@
+import MyCustomClassLoader.CustomClassLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.management.*;
@@ -16,7 +17,7 @@ public class JmxScannerMain {
     public static void main(String[] args) throws Exception {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         CustomClassLoader dynamic = CustomClassLoader.findAncestor(contextClassLoader);
-        URL url = Paths.get("/home/opc/Oracle/Middleware/Oracle_Home/wlserver/server/lib/weblogic.jar").toRealPath().toUri().toURL();
+        URL url = Paths.get("/home/tk/EAP-7.4.0/bin/client/jboss-cli-client.jar").toRealPath().toUri().toURL();
         dynamic.add(url);
         scanJBoss();
     }
@@ -28,14 +29,21 @@ public class JmxScannerMain {
         String urlString = "service:jmx:remote+http://" + host + ":" + port;
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 
+        // App server credential
+        String user = "user";
+        String password = "Password123!";
+        String[] credentials = new String[] { user, password };
+        Map credentialsMap = new HashMap();
+        credentialsMap.put("jmx.remote.credentials", credentials);
+
         //Establishing mbeanServerConnection
-        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL);
+        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, credentialsMap);
         MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 
-//         Get all attributes of mBean Server
+//        Get all attributes of mBean Server
         queryAllMbeansAttribute(connection);
 
-//         Query relevant attributes from JBoss App Server
+//        Query relevant attributes from JBoss App Server
         queryJBossServer(connection);
 
         jmxConnector.close();
@@ -56,11 +64,13 @@ public class JmxScannerMain {
                 }
         );
 
-        Object o = connection.getAttribute(new ObjectName("java.lang:type=Memory"), "HeapMemoryUsage");
-        CompositeData cd = (CompositeData) o;
-        System.out.println(cd.get("committed"));
-        System.out.println(cd.get("used"));
-        System.out.println(cd.get("max"));
+        Map heap = new LinkedHashMap();
+        Object heapMemoryUsage = connection.getAttribute(new ObjectName("java.lang:type=Memory"), "HeapMemoryUsage");
+        CompositeData cd = (CompositeData) heapMemoryUsage;
+        heap.put("Max", cd.get("max"));
+        heap.put("Committed", cd.get("committed"));
+        heap.put("Used", cd.get("used"));
+        JbossInfo.put("Heap-in-bytes", heap);
 
         // Get all JBoss Deployments
         String [] deploymentAttributes = {"runtimeName", "enabledTime", "enabled", "status"};

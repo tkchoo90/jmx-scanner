@@ -3,6 +3,7 @@ Credits to:
 https://stackoverflow.com/questions/60764/how-to-load-jar-files-dynamically-at-runtime
 https://github.com/update4j/update4j/blob/master/src/main/java/org/update4j/DynamicClassLoader.java
  */
+package MyCustomClassLoader;
 
 import java.io.IOException;
 import java.net.URL;
