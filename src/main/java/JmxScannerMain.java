@@ -26,6 +26,9 @@ public class JmxScannerMain {
         // Setup JMX connection
         String host = "localhost";
         int port = 9990; // default jboss management-http port
+        // The remote+http connection protoctol is JBoss specific, and could only be obtained from jboss-cli-client.jar or the wild-fly-client (in pom.xml)
+        // By performing a dynamic class load in line 21, we no longer need to add those dependency to our project at compile time
+        // This allows us to use the vendor jar file already existing in a JBoss installation directory
         String urlString = "service:jmx:remote+http://" + host + ":" + port;
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 

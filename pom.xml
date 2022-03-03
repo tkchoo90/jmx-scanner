@@ -47,6 +47,7 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.10.5.1</version>
         </dependency>
+<!--        IF we do not dynamic load the jar file, we would need to add this dependency to our project -->
 <!--        <dependency>-->
 <!--            <groupId>org.wildfly</groupId>-->
 <!--            <artifactId>wildfly-client-all</artifactId>-->
